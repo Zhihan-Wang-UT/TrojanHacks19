@@ -30,13 +30,16 @@ function preload() {
     this.load.spritesheet('umbrella', 'assets/RPG_assets.png', { frameWidth: 32, frameHeight: 32 });
     this.load.image('platform', 'assets/platform.png');
     this.load.image('background', 'assets/background.png');
+    this.load.spritesheet('enermy','assets/RPG_assets2.png', { frameWidth: 32, frameHeight: 32 });
+    this.load.image('touchdown','assets/platform1.png');
+    this.load.image('ball', 'assets/ball.png');
 }
 
 
 // TO DO 3: Set up game state (score)
 const gameState = {
     score: 0,
-    current_player: 5,
+    current_player: 4,
     former_player: 1,
     ballpassed: 1,
     x1: 180,
@@ -55,12 +58,25 @@ const gameState = {
 
 function create() {
     // TO DO 4: Make a player
-    this.add.image(518, 250, 'background'); //make a background
+    this.add.image(518, 250, 'background');//make a background
     gameState.player = this.physics.add.sprite(180, 100, 'umbrella');
-    gameState.player2 = this.physics.add.sprite(300, 200, 'umbrella');
-    gameState.cursors = this.input.keyboard.createCursorKeys();
 
-    gameState.ball = this.physics.add.sprite(130, 130, 'ball');
+    gameState.player2 = this.physics.add.sprite(400, 50, 'enermy');
+    gameState.player3 = this.physics.add.sprite(400, 125, 'enermy');
+    gameState.player4 = this.physics.add.sprite(400, 200, 'enermy');
+    gameState.player5 = this.physics.add.sprite(400, 275, 'enermy');
+    gameState.player6 = this.physics.add.sprite(400, 350, 'enermy');
+
+    gameState.ball = this.physics.add.sprite(160, 100, 'ball');
+    this.gunTween = this.tweens.add({
+        targets: [gameState.ball],
+        angle: 360,
+        duration: 500,
+        repeat: -1,
+        callbackScope: this,
+    });
+
+    gameState.cursors = this.input.keyboard.createCursorKeys();
 
     gameState.fake1 = this.physics.add.sprite(gameState.x1, gameState.y1, 'umbrella');//below remember game state
     gameState.fake2 = this.physics.add.sprite(gameState.x2, gameState.y2, 'umbrella');
@@ -99,10 +115,21 @@ function create() {
         frames: [{ key: 'umbrella', frame: 0 }],
         frameRate: 20
     });
+    this.anims.create({
+        key: 'move',
+        frames: this.anims.generateFrameNumbers('enermy', { frames: [0, 3, 0, 6] }),
+        frameRate: 20,
+        repeat: -1
+    });
 
     // TO DO 5: Set up platform
     const platforms = this.physics.add.staticGroup();
-    platforms.create(518, 490, 'platform').setScale(3, .3).refreshBody();
+    platforms.create(518, 490, 'platform').setScale(3, .5).refreshBody();
+    platforms.create(518, 10, 'platform').setScale(3, .5).refreshBody();
+    platforms.create(10, 250, 'platform').setScale(0.07, 10).refreshBody();
+    platforms.create(1026, 250, 'platform').setScale(0.05, 10).refreshBody();
+
+    
 
     // TO DO 6: Add score text
     gameState.scoreText = this.add.text(195, 480, 'score: 0', { fontSize: '15px', fill: '#000000' });
@@ -138,8 +165,7 @@ function create() {
     this.physics.add.overlap(gameState.player, stars, () => {
         this.physics.pause();
         starGenLoop.destroy();
-        this.add.text(195, 200, 'Game Over', { fontSize: '15px', fill: '#000000' });
-        this.add.text(195, 300, 'Click to Restar', { fontSize: '15px', fill: '#000000' });
+        this.add.text(618, 250, 'Game Over', { fontSize: '60px', fill: '#000000' });
         this.input.on('pointerup', () => {
             this.scene.restart();
         });
@@ -152,6 +178,15 @@ function create() {
         }
 
     }, this);
+
+    this.physics.add.overlap(gameState.player, gameState.player2, () => {
+    this.physics.pause();
+    starGenLoop.destroy();
+    this.add.text(350,200,'Game Over',{fontSize:'60px',fill:'#000000'});
+    this.input.on('pointerup', () =>{
+        this.scene.restart();
+    });
+  });
 
 
 
@@ -212,6 +247,7 @@ function update() {
 
     //--------------------------------------//
     if (gameState.ballpassed == 1) {
+        gameState.ball.visible = 1;
         if (gameState.former_player == 1) {
             gameState.fake1.x = gameState.player.x;
             gameState.fake1.y = gameState.player.y;
@@ -287,20 +323,50 @@ function update() {
     var dx = gameState.player.x - gameState.player2.x;
     var dy = gameState.player.y - gameState.player2.y;
     var denorm = Math.sqrt(dx * dx + dy * dy);
-    gameState.player2.setVelocityY(50*dy/denorm);
-    gameState.player2.setVelocityX(50 * dx / denorm);
-
-    var dx2 = gameState.player.x - gameState.ball.x;
-    var dy2 = gameState.player.y - gameState.ball.y;
-    var denorm = Math.sqrt(dx * dx + dy * dy);
-    gameState.ball.setVelocityY(50 * dy / denorm);
-    gameState.ball.setVelocityX(50 * dx / denorm);
-
+    gameState.player2.setVelocityY(60*dy/denorm);
+    gameState.player2.setVelocityX(140*dx/denorm);
+    gameState.player2.anims.play('move', true);
     //BKey = gameState.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B).isDown
     //if (gameStage. isDown(Phaser.Keyboard.B)) {
     //    gameState.former_player = gameState.current_player;
     //    gameState.current_player = 3;
     //    gameState.ballpassed = 1;
     //}
+    var dx = gameState.player.x - gameState.player3.x;
+    var dy = gameState.player.y - gameState.player3.y;
+    var denorm = Math.sqrt(dx * dx + dy * dy);
+    gameState.player3.setVelocityY(90*dy/denorm);
+    gameState.player3.setVelocityX(110*dx/denorm);
+    gameState.player3.anims.play('move', true);
 
+    var dx = gameState.player.x - gameState.player4.x;
+    var dy = gameState.player.y - gameState.player4.y;
+    var denorm = Math.sqrt(dx * dx + dy * dy);
+    gameState.player4.setVelocityY(70*dy/denorm);
+    gameState.player4.setVelocityX(130*dx/denorm);
+    gameState.player4.anims.play('move', true);
+
+    var dx = gameState.player.x - gameState.player5.x;
+    var dy = gameState.player.y - gameState.player5.y;
+    var denorm = Math.sqrt(dx * dx + dy * dy);
+    gameState.player5.setVelocityY(120*dy/denorm);
+    gameState.player5.setVelocityX(80*dx/denorm);
+    gameState.player5.anims.play('move', true);
+
+    var dx = gameState.player.x - gameState.player6.x;
+    var dy = gameState.player.y - gameState.player6.y;
+    var denorm = Math.sqrt(dx * dx + dy * dy);
+    gameState.player6.setVelocityY(150*dy/denorm);
+    gameState.player6.setVelocityX(50*dx/denorm);
+    gameState.player6.anims.play('move', true);
+
+    var dx2 = gameState.player.x - gameState.ball.x;
+    var dy2 = gameState.player.y - gameState.ball.y;
+    var denorm = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+    gameState.ball.setVelocityY(350 * dy2 / denorm);
+    gameState.ball.setVelocityX(350 * dx2 / denorm);
+
+    if (Math.abs(dx2) < 10 && Math.abs(dy2) < 10) {
+        gameState.ball.visible = 0;
+    }
 }
